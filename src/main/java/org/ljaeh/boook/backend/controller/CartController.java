@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,16 +44,18 @@ public class CartController {
 		int memberId = jwtService.getId(token);
 		
 		System.out.println("memberId : " + memberId);
-		Cart cart = cartRepository.findByMemberIdAndItemId(memberId, itemId);
-		
-		if (cart == null) {
-			Cart newCart = new Cart();
-			newCart.setMemberId(memberId);
-			newCart.setItemId(itemId);
-			cartRepository.save(newCart);
-		}
-		
-		return new ResponseEntity<>(HttpStatus.OK);
+		Cart existingCart = cartRepository.findByMemberIdAndItemId(memberId, itemId);
+		if (existingCart != null) {
+	        // 이미 주문이 존재하는 경우
+	        return ResponseEntity.status(HttpStatus.CONFLICT).body("주문이 이미 존재합니다.");
+	    } else {
+	        // 새로운 주문 생성
+	        Cart newCart = new Cart();
+	        newCart.setMemberId(memberId);
+	        newCart.setItemId(itemId);
+	        cartRepository.save(newCart);
+	        return ResponseEntity.ok().build();
+	    }
 	}
 	
 	@GetMapping("/api/cart/items")
@@ -67,9 +70,28 @@ public class CartController {
 		List<Integer> itemIds = carts.stream().map(Cart::getItemId).toList();
 		List<Item> items = itemRepository.findByIdIn(itemIds);
 		
-		return new ResponseEntity<>(carts,HttpStatus.OK);
+		return new ResponseEntity<>(items,HttpStatus.OK);
 	}
 	
+	@DeleteMapping("/api/cart/items/{itemId}")
+	public ResponseEntity pushCartItem1(
+			@PathVariable("itemId") int itemId,
+			@CookieValue(value = "token", required = false) String token
+			){
+		
+		if(!jwtService.isValid(token)) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+		}
+		
+		int memberId = jwtService.getId(token);
+		
+		Cart cart = cartRepository.findByMemberIdAndItemId(memberId, itemId);
+		
+		cartRepository.delete(cart);
+			
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
 	
+		
 }
  
