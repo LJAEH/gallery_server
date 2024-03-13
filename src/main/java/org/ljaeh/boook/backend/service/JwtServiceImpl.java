@@ -24,9 +24,8 @@ public class JwtServiceImpl implements JwtService{
 
 	@Override
 	public String getToken(String key, Object value) {
-		
 		Date expTime = new Date();
-		expTime.setTime(expTime.getTime() +1000*60*5);
+		expTime.setTime(expTime.getTime() + 1000*60*5);
 		byte[] secretByteKey = DatatypeConverter.parseBase64Binary(secretKey);
 		Key signKey = new SecretKeySpec(secretByteKey, SignatureAlgorithm.HS256.getJcaName());
 		
@@ -41,7 +40,6 @@ public class JwtServiceImpl implements JwtService{
 				.setClaims(map)
 				.setExpiration(expTime)
 				.signWith(signKey, SignatureAlgorithm.HS256);
-		
 		
 		return builder.compact();
 	}

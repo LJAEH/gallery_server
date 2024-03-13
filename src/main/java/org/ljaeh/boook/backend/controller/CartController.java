@@ -36,7 +36,6 @@ public class CartController {
 			@CookieValue(value = "token", required = false) String token
 			){
 		
-		System.out.println("itemId : " + itemId);
 		if(!jwtService.isValid(token)) {
 			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 		}
