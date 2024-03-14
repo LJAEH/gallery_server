@@ -46,6 +46,9 @@ public class JwtServiceImpl implements JwtService{
 	
 	@Override
     public Claims getClaims(String token) {
+		
+		System.out.println("token : " +token);
+		
         if (token != null && !"".equals(token)) {
             try {
                 byte[] secretByteKey = DatatypeConverter.parseBase64Binary(secretKey);
